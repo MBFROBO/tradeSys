@@ -1,12 +1,13 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from sqlalchemy import create_engine, text
 import os
 import pandas as pd
 from datetime import datetime
+from common import FetchSettings
 
 app = FastAPI(title="Finance ML API")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://airflow:airflow@postgres-data/airflow_data")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://airflow:airflow@postgres-data:5432/airflow_data")
 engine = create_engine(DATABASE_URL)
 
 @app.get("/tickers")
@@ -50,6 +51,32 @@ def get_metrics(ticker: str):
     """)
     df = pd.read_sql(query, engine, params={"ticker": ticker})
     return df.to_dict(orient="records")
+
+@app.get("/settings")
+def get_settings():
+    query = """
+        SELECT t.name AS ticker, fs.interval, fs.lookback_days
+        FROM tickers t
+        JOIN fetch_settings fs ON fs.ticker_id = t.id
+    """
+    df = pd.read_sql(query, engine)
+    return df.to_dict(orient="records")
+
+@app.post("/settings/update")
+def update_settings(settings: FetchSettings):
+    with engine.begin() as conn:
+        res = conn.execute(text("SELECT id FROM tickers WHERE name=:t"), {"t": settings.ticker}).fetchone()
+        if not res:
+            raise HTTPException(status_code=404, detail="Ticker not found")
+        conn.execute(
+            text("""
+                UPDATE fetch_settings
+                SET interval=:i, lookback_days=:l
+                WHERE ticker_id=:id
+            """),
+            {"i": settings.interval, "l": settings.lookback_days, "id": res[0]},
+        )
+    return {"status": "ok", "updated": settings.ticker}
 
 @app.get("/")
 def root():
