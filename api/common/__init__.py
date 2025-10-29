@@ -1,6 +1,7 @@
-from .settings import  TickersModel, FetchSettings
+from .settings import  TickersModel, FetchSettings, TaskLog
 
 __all__ = [
         "TickersModel", 
-        "FetchSettings"
+        "FetchSettings",
+        "TaskLog",
         ]

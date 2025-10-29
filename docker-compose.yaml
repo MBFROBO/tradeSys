@@ -8,6 +8,8 @@ x-airflow-common-env: &airflow-common-env
   AIRFLOW__CORE__FERNET_KEY: FfPmp2RvhD6gM1q3gD5I5X9aOYF4F5b6hS6hTgW0sMg=
   AIRFLOW__WEBSERVER__SECRET_KEY: super_secret_shared_key_123
   AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+  AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+  AIRFLOW__LOGGING__REMOTE_LOGGING: False
 
 services:
   postgres-data:
@@ -38,6 +40,8 @@ services:
       - postgres-data
     environment:
       <<: *airflow-common-env
+    env_file:
+      - .env
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/plugins:/opt/airflow/plugins
@@ -54,6 +58,8 @@ services:
       - airflow-init
     environment:
       <<: *airflow-common-env
+    env_file:
+      - .env
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/plugins:/opt/airflow/plugins
@@ -69,6 +75,8 @@ services:
       - default
     depends_on:
       - airflow-init
+    env_file:
+      - .env
     environment:
       <<: *airflow-common-env
     volumes:
@@ -85,6 +93,8 @@ services:
     depends_on:
       - airflow-init
       - redis
+    env_file:
+      - .env
     environment:
       <<: *airflow-common-env
     volumes:
@@ -103,6 +113,8 @@ services:
       - postgres-data
     networks:
       - default
+
+
 
 volumes:
   postgres_data:

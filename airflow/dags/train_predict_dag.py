@@ -44,7 +44,7 @@ def train_and_predict():
 default_args = {
     "owner": "airflow",
     "retries": 1,
-    "retry_delay": timedelta(minutes=10),
+    "retry_delay": timedelta(hours=12),
 }
 
 with DAG(

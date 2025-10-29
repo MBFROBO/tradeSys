@@ -3,12 +3,16 @@ from sqlalchemy import create_engine, text
 import os
 import pandas as pd
 from datetime import datetime
-from common import FetchSettings
+from common import TickersModel, FetchSettings, TaskLog
+from typing import List, Optional
+from sqlalchemy.orm import sessionmaker
 
 app = FastAPI(title="Finance ML API")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://airflow:airflow@postgres-data:5432/airflow_data")
 engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+
 
 @app.get("/tickers")
 def get_tickers():
@@ -63,7 +67,7 @@ def get_settings():
     return df.to_dict(orient="records")
 
 @app.post("/settings/update")
-def update_settings(settings: FetchSettings):
+def update_settings(settings: dict):
     with engine.begin() as conn:
         res = conn.execute(text("SELECT id FROM tickers WHERE name=:t"), {"t": settings.ticker}).fetchone()
         if not res:
@@ -77,6 +81,34 @@ def update_settings(settings: FetchSettings):
             {"i": settings.interval, "l": settings.lookback_days, "id": res[0]},
         )
     return {"status": "ok", "updated": settings.ticker}
+
+@app.get("/logs", response_model=List[TaskLog])
+def get_logs(
+    dag_id: Optional[str] = Query(None),
+    task_id: Optional[str] = Query(None),
+    limit: int = Query(100),
+):
+    query = "SELECT id, dag_id, task_id, log_level, message, timestamp FROM task_logs"
+    filters = []
+    params = {}
+
+    if dag_id:
+        filters.append("dag_id = :dag_id")
+        params["dag_id"] = dag_id
+    if task_id:
+        filters.append("task_id = :task_id")
+        params["task_id"] = task_id
+
+    if filters:
+        query += " WHERE " + " AND ".join(filters)
+
+    query += " ORDER BY id DESC LIMIT :limit"
+    params["limit"] = limit
+
+    with SessionLocal() as session:
+        rows = session.execute(text(query), params).fetchall()
+
+    return [dict(r._mapping) for r in rows]
 
 @app.get("/")
 def root():

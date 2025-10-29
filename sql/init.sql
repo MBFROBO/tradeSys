@@ -3,6 +3,25 @@ CREATE TABLE IF NOT EXISTS tickers (
     name TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE IF NOT EXISTS tg_news (
+    id SERIAL PRIMARY KEY,
+    Date TIMESTAMP NOT NULL,
+    news TEXT NOT NULL,
+    source TEXT,
+    clean_news TEXT
+);
+
+CREATE TABLE task_logs (
+    id SERIAL PRIMARY KEY,
+    dag_id VARCHAR(250),
+    task_id VARCHAR(250),
+    log_level VARCHAR(50),
+    message TEXT,
+    timestamp TIMESTAMP,
+
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS fetch_settings (
     id SERIAL PRIMARY KEY,
     ticker_id INT REFERENCES tickers(id) ON DELETE CASCADE,

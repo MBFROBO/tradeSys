@@ -4,4 +4,7 @@ numpy
 scikit-learn
 psycopg2-binary
 sqlalchemy
-tensorflow
+Telethon
+pytz
+celery
+flower
