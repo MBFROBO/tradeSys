@@ -14,7 +14,7 @@ from airflow.operators.python import PythonOperator
 
 channel_list = os.getenv("CHANNELS", "")
 fetch_limit_days = int(os.getenv("FETCH_LIMIT_DAYS", "1"))
-db_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://airflow:airflow@postgres-data:5432/airflow_data")
+db_url = os.getenv("DB_URL", "postgresql+psycopg2://airflow:airflow@postgres-data:5432/airflow_data")
 
 chs = re.split(r"[,\s]+", channel_list.strip())
 if not chs:

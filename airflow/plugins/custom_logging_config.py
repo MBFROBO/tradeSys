@@ -6,9 +6,8 @@ LOGGING_CONFIG = copy.deepcopy(DEFAULT_LOGGING_CONFIG)
 LOGGING_CONFIG['handlers']['sql'] = {
     'class': 'plugins.sql_logger.SQLAlchemyLogHandler',
     'level': 'INFO',
+    'formatter': 'airflow', 
 }
 
-# Add to root if needed; extend specific loggers
-for logger_name in ["airflow.task"]:
-    if logger_name in LOGGING_CONFIG["loggers"]:
-        LOGGING_CONFIG["loggers"][logger_name]["handlers"].append("sql")
+
+LOGGING_CONFIG["loggers"]["airflow.task"]["handlers"].append("sql")

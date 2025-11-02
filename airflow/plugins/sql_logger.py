@@ -1,10 +1,12 @@
+import logging
+import re
+from airflow import settings  # ← Ключевой импорт для Airflow 2.0+
 from airflow.plugins_manager import AirflowPlugin
 from airflow.utils.session import provide_session
 from airflow.utils.db import create_session
 from airflow.models.base import Base
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime
-import logging
 
 class TaskLog(Base):
     __tablename__ = "task_logs"
@@ -31,8 +33,18 @@ def log_task_message(dag_id, task_id, log_level, message):
 class SQLAlchemyLogHandler(logging.Handler):
     def emit(self, record):
         message = self.format(record)
-        dag_id = getattr(record, 'dag_id', 'unknown')
-        task_id = getattr(record, 'task_id', 'unknown')
+        
+        ti = getattr(settings, 'task_instance', None)
+        if ti:
+            dag_id = ti.dag_id
+            task_id = ti.task_id
+        else:
+            match = re.search(r"ti=<TaskInstance: (\w+)\.(\w+)", message)
+            if match:
+                dag_id, task_id = match.groups()
+            else:
+                dag_id = task_id = 'unknown'
+        
         log_task_message(
             dag_id=dag_id,
             task_id=task_id,
@@ -44,7 +56,7 @@ class SqlLoggerPlugin(AirflowPlugin):
     name = "sql_logger"
     models = [TaskLog]
 
-    def on_load(self, *args, **kwargs):
-        with create_session() as session:
-            if not session.bind.dialect.has_table(session.bind.connect(), "task_logs"):
-                TaskLog.__table__.create(bind=session.bind, checkfirst=True)
+    @provide_session
+    def on_load(self, session=None):
+        if not session.bind.dialect.has_table(session.bind.connect(), "task_logs"):
+            TaskLog.__table__.create(bind=session.bind, checkfirst=True)

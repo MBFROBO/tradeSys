@@ -48,13 +48,45 @@ CREATE TABLE IF NOT EXISTS predictions (
     prediction FLOAT
 );
 
+CREATE TABLE IF NOT EXISTS ohlcv_features (
+    id SERIAL PRIMARY KEY,
+    ticker TEXT NOT NULL,
+    date TIMESTAMP NOT NULL,
+    sma_5 FLOAT,
+    sma_20 FLOAT,
+    volatility FLOAT,
+    daily_return FLOAT,
+    processed_at TIMESTAMP NOT NULL
+);
+
+CREATE OR REPLACE VIEW v_ohlcv_full AS
+SELECT
+    o.id AS ohlcv_id,
+    o.ticker,
+    o.date,
+    o.open,
+    o.high,
+    o.low,
+    o.close,
+    o.volume,
+    f.sma_5,
+    f.sma_20,
+    f.volatility,
+    f.daily_return,
+    f.processed_at
+FROM ohlcv o
+LEFT JOIN ohlcv_features f
+    ON o.ticker = f.ticker AND o.date = f.date
+ORDER BY o.ticker, o.date;
+
+
 INSERT INTO tickers (name) VALUES
-    ('GAZP.ME'),  
-    ('SBER.ME'),  
-    ('LKOH.ME'),  
-    ('YNDX.ME'),  
-    ('TATN.ME'),  
-    ('ROSN.ME')  
+    ('GAZP'),  
+    ('SBER'),  
+    ('LKOH'),  
+    ('YNDX'),  
+    ('TATN'),  
+    ('ROSN')  
 ON CONFLICT DO NOTHING;
 
 INSERT INTO fetch_settings (ticker_id, interval, lookback_days)

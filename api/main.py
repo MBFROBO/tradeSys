@@ -67,7 +67,7 @@ def get_settings():
     return df.to_dict(orient="records")
 
 @app.post("/settings/update")
-def update_settings(settings: dict):
+def update_settings(settings: TickersModel):
     with engine.begin() as conn:
         res = conn.execute(text("SELECT id FROM tickers WHERE name=:t"), {"t": settings.ticker}).fetchone()
         if not res:

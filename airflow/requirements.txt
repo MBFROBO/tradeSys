@@ -8,3 +8,4 @@ Telethon
 pytz
 celery
 flower
+apimoex

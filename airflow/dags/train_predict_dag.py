@@ -4,8 +4,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+import os
 
-DB_URL = "postgresql+psycopg2://airflow:airflow@postgres-data:5432/airflow_data"
+DB_URL_DEFAULT = "postgresql+psycopg2://airflow:airflow@postgres-data:5432/airflow_data"
+DB_URL = os.getenv("DB_URL", DB_URL_DEFAULT)
 
 def train_and_predict():
     engine = create_engine(DB_URL)

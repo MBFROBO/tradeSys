@@ -13,7 +13,9 @@ class FetchSettings(BaseModel):
 
 
 class TickersModel(pydantic.BaseModel):
-    tickers: list[str]
+   ticker: str
+   interval: str
+   lookback_days: int
 
 
 class TaskLog(BaseModel):
