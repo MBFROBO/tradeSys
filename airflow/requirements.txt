@@ -9,3 +9,4 @@ pytz
 celery
 flower
 apimoex
+git+https://github.com/aarigs/pandas-ta.git

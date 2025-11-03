@@ -52,13 +52,44 @@ CREATE TABLE IF NOT EXISTS ohlcv_features (
     id SERIAL PRIMARY KEY,
     ticker TEXT NOT NULL,
     date TIMESTAMP NOT NULL,
+
+    -- Скользящие средние
     sma_5 FLOAT,
     sma_20 FLOAT,
-    volatility FLOAT,
-    daily_return FLOAT,
-    processed_at TIMESTAMP NOT NULL
-);
+    sma_50 FLOAT,
+    sma_200 FLOAT,
 
+    ema_20 FLOAT,
+    ema_50 FLOAT,
+
+    -- Индикаторы тренда
+    macd FLOAT,
+    macd_signal FLOAT,
+    macd_hist FLOAT,
+
+    adx FLOAT,
+
+    -- Индикаторы волатильности
+    volatility FLOAT,
+    atr FLOAT,
+
+    -- Осцилляторы (momentum)
+    rsi FLOAT,
+    stoch_k FLOAT,
+    stoch_d FLOAT,
+
+    -- Полосы Боллинджера
+    bb_upper FLOAT,
+    bb_middle FLOAT,
+    bb_lower FLOAT,
+    bb_width FLOAT,
+
+    -- Доходность
+    daily_return FLOAT,
+    cumulative_return FLOAT,
+
+    processed_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 CREATE OR REPLACE VIEW v_ohlcv_full AS
 SELECT
     o.id AS ohlcv_id,
